@@ -1,0 +1,968 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Events | Stanford Women in Design</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400&display=swap" rel="stylesheet" />
+  <style>
+    @font-face {
+      font-family: "Instrument Serif";
+      src: url("brand_assets/Instrument_Serif/InstrumentSerif-Regular.ttf") format("truetype");
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "Instrument Serif";
+      src: url("brand_assets/Instrument_Serif/InstrumentSerif-Italic.ttf") format("truetype");
+      font-style: italic;
+      font-display: swap;
+    }
+
+    :root {
+      --swid-blue: #1f16bf;
+      --swid-cream: #f0ebd6;
+      --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+      /* Chrome tokens */
+      --edge: 16px;          /* page gutter */
+      --bar-y: 34px;         /* vertical centre of the top bar */
+      --nav-logo: 50px;      /* logo width in the top bar */
+      --ui-font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      --ui-size: 11px;
+      --display-size: clamp(30px, 3.6vw, 52px);   /* hero name + section headings */
+      --body-size: calc(var(--ui-size) + 2px);     /* About + section body copy */
+    }
+    @media (max-width: 399px) {
+      :root { --nav-logo: 42px; --ui-size: 10px; }
+    }
+    @media (min-width: 768px) {
+      :root { --edge: 20px; --nav-logo: 73px; --ui-size: 13px; }
+    }
+
+    html { scroll-behavior: auto; }
+    body {
+      margin: 0;
+      background: var(--swid-blue);
+      color: var(--swid-cream);
+    }
+
+    /* ---------- Logo (top left of the bar) ---------- */
+    .logo-track {
+      position: fixed;
+      top: var(--bar-y);
+      left: var(--edge);
+      z-index: 71;
+      width: var(--nav-logo);
+    }
+    .logo {
+      position: relative;
+      display: block;
+      aspect-ratio: 2542 / 886;
+      transform: translateY(-50%) translateY(8px) scale(0.96);
+      opacity: 0;
+      animation: logo-in 500ms var(--spring) 200ms forwards;
+    }
+    .logo img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    .logo__star {
+      position: absolute;
+      left: 78.206%;
+      top: 22.291%;
+      width: 19.355%;
+      aspect-ratio: 1;
+    }
+    .logo__star img { width: 100%; height: 100%; }
+    body.is-open .logo-track { pointer-events: auto; }
+
+    @keyframes logo-in   { to { transform: translateY(-50%); opacity: 1; } }
+
+    /* ---------- Chrome (top bar + follow us) ---------- */
+    .chrome {
+      font-family: var(--ui-font);
+      font-size: var(--ui-size);
+      line-height: 1.35;
+      letter-spacing: 0.01em;
+      opacity: 0;
+      transition: opacity 500ms ease 150ms;
+    }
+    body.is-open .chrome { opacity: 1; }
+
+    .topbar {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 70;
+      height: calc(var(--bar-y) * 2);
+      padding: 0 var(--edge);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;   /* logo sits on the left as its own fixed layer */
+    }
+    .topbar__nav { display: none; gap: 36px; }
+    @media (min-width: 768px) {
+      .topbar__nav { display: flex; }
+      .topbar__menu { display: none; }
+    }
+
+    .follow {
+      position: fixed;
+      left: var(--edge);
+      bottom: 20px;
+      z-index: 70;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .ui-link {
+      color: inherit;
+      text-decoration: none;
+      border-radius: 2px;
+      transition: opacity 200ms ease, transform 200ms var(--spring);
+    }
+    .ui-link:hover { opacity: 0.6; }
+    .ui-link:active { opacity: 0.4; transform: translateY(1px); }
+    .ui-link:focus-visible { outline: 1px solid var(--swid-cream); outline-offset: 4px; }
+    .ui-link[aria-current="page"] { opacity: 1; }
+
+    .topbar__menu {
+      background: none;
+      border: 0;
+      padding: 0;
+      font: inherit;
+      letter-spacing: inherit;
+      text-transform: inherit;
+      color: inherit;
+      cursor: pointer;
+    }
+
+    /* Mobile menu sheet */
+    .sheet {
+      position: fixed;
+      inset: calc(var(--bar-y) * 2) 0 auto 0;
+      z-index: 69;
+      padding: 8px var(--edge) 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: var(--swid-blue);
+      opacity: 0;
+      transform: translateY(-8px);
+      pointer-events: none;
+      transition: opacity 250ms ease, transform 350ms var(--spring);
+    }
+    body.is-open .sheet:not(.is-open) { opacity: 0; }
+    .sheet.is-open { opacity: 1; transform: none; pointer-events: auto; }
+    @media (min-width: 768px) { .sheet { display: none; } }
+
+    /* ---------- Events: big title panel + 2×2 card grid ----------
+       Layout from the reference (measured at 1440 wide); colours inverted onto the brand blue. */
+    .events {
+      --rule: 3px solid var(--swid-cream);
+      display: grid;
+      grid-template-columns: 1fr;
+      scroll-margin-top: calc(var(--bar-y) * 2);   /* nav link lands it just below the top bar */
+      border-top: var(--rule);
+      border-bottom: var(--rule);
+      color: #ffffff;
+    }
+    .events__intro {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 48px;
+      padding: 96px 24px 32px;
+    }
+    .events__title {
+      margin: 0;
+      font-family: "Instrument Serif", Georgia, serif;
+      font-weight: 400;
+      font-size: clamp(72px, 9.7vw, 180px);    /* 140px at 1440: the serif runs narrower than the old bold sans */
+      line-height: 0.9;
+      letter-spacing: -0.02em;
+    }
+    .events__cta {
+      align-self: flex-start;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 20px;
+      background: #a616c0;
+      color: #ffffff;
+      font: 500 11px/1 var(--ui-font);
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      text-decoration: none;
+      box-shadow: 0 1px 2px rgb(10 6 80 / 0.3), 0 10px 24px -8px rgb(80 8 100 / 0.55);
+      transition: transform 250ms var(--spring), opacity 200ms ease;
+    }
+    .events__cta:hover { transform: translateY(-2px); }
+    .events__cta:active { transform: translateY(1px); opacity: 0.85; }
+    .events__cta:focus-visible { outline: 2px solid var(--swid-cream); outline-offset: 3px; }
+    .events__cta svg, .event-card__link svg { width: 10px; height: 10px; transition: transform 250ms var(--spring); }
+    .events__cta:hover svg, .event-card__link:hover svg { transform: translateX(3px); }
+
+    .events__grid { display: grid; grid-template-columns: 1fr; }
+    .event-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      min-height: 290px;
+      padding: 32px 24px 28px;
+      border-top: var(--rule);
+    }
+    .event-card__num { font: 400 10px/1 var(--ui-font); letter-spacing: 0.02em; }
+    .event-card__icon {
+      position: absolute;
+      top: 28px;
+      right: 24px;
+      width: 64px;
+      height: 64px;
+      color: var(--swid-cream);
+      opacity: 0.9;
+    }
+    .event-card__title {
+      margin: 72px 0 0;                  /* fixed from the top so titles align across a row */
+      font: 400 28px/1.1 "Instrument Serif", Georgia, serif;
+      letter-spacing: -0.005em;
+    }
+    .event-card__desc {
+      max-width: 30em;
+      margin: 16px 0 24px;
+      font: 400 12px/1.45 "Inter", var(--ui-font);
+      color: rgb(255 255 255 / 0.88);
+    }
+    /* divider + link sit at the card bottom; the description keeps at least 24px above them */
+    .event-card__rule { margin: auto 0 0; border: 0; border-top: 1px solid rgb(240 235 214 / 0.35); }
+    .event-card__link {
+      align-self: flex-start;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 22px;
+      color: inherit;
+      font: 500 10.5px/1 var(--ui-font);
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: opacity 200ms ease;
+    }
+    .event-card__link:hover { opacity: 0.7; }
+    .event-card__link:active { opacity: 0.5; }
+    .event-card__link:focus-visible { outline: 1px solid currentColor; outline-offset: 4px; }
+
+    /* Hover / keyboard focus: card fills with the magenta accent; text stays white */
+    .event-card { isolation: isolate; }
+    .event-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: #a616c0;
+      opacity: 0;
+      transition: opacity 300ms ease;
+    }
+    /* keyboard focus only, so the card doesn't stay lit after a mouse click returns focus to it */
+    .event-card:hover::before,
+    .event-card:focus-visible::before,
+    .event-card:has(:focus-visible)::before { opacity: 1; }
+
+    @media (min-width: 768px) {
+      .events { grid-template-columns: 44.3% 1fr; min-height: max(40.8vw, 560px); }   /* 587px at 1440; grows if copy needs it */
+      .events__intro { padding: 56px 32px 32px 33px; border-right: var(--rule); }
+      .events__grid { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+      .event-card { min-height: 0; padding: 34px 32px 30px; border-top: 0; }
+      .event-card:nth-child(odd)  { border-right: var(--rule); }
+      .event-card:nth-child(-n+2) { border-bottom: var(--rule); }
+      .event-card__icon { right: 32px; top: 32px; }
+    }
+
+    /* ---------- Upcoming events: horizontal card gallery ---------- */
+    .upcoming { padding: 96px 0 0; color: #ffffff; }
+    .upcoming__title {
+      margin: 0 0 32px;
+      padding: 0 24px;
+      font: 400 var(--display-size)/1.05 "Instrument Serif", Georgia, serif;
+    }
+    .upcoming__track {
+      display: flex;
+      gap: 20px;
+      padding: 0 24px 8px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: 24px;
+      scrollbar-width: none;
+      cursor: grab;
+    }
+    .upcoming__track::-webkit-scrollbar { display: none; }
+    .upcoming__track.is-dragging { cursor: grabbing; scroll-snap-type: none; }
+    .upcoming__track.is-dragging * { pointer-events: none; }
+    .upcoming__track:focus-visible { outline: 2px solid var(--swid-cream); outline-offset: 4px; }
+    .up-card { flex: 0 0 clamp(260px, 38vw, 580px); scroll-snap-align: start; }
+    .up-card__media {
+      position: relative;
+      aspect-ratio: 581 / 193;          /* half the reference height */
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--swid-cream);
+      box-shadow: 0 1px 2px rgb(10 6 80 / 0.25), 0 16px 32px -12px rgb(10 6 80 / 0.45);
+    }
+    .up-card__media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 600ms var(--spring);
+      -webkit-user-drag: none;
+    }
+    .up-card:hover .up-card__media img { transform: scale(1.03); }
+    .up-card__title { margin: 24px 0 0; font: 400 28px/1.15 "Instrument Serif", Georgia, serif; }
+    .up-card__desc { max-width: 32em; margin: 10px 0 0; font: 400 15px/1.55 "Inter", var(--ui-font); color: rgb(240 235 214 / 0.62); }
+    .up-card__link {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 24px;
+      color: #ffffff;
+      font: 400 14px/1 var(--ui-font);
+      text-decoration: none;
+      transition: opacity 200ms ease;
+    }
+    .up-card__link svg { width: 16px; height: 16px; transition: transform 250ms var(--spring); }
+    .up-card__link:hover svg { transform: translateX(4px); }
+    .up-card__link:active { opacity: 0.6; }
+    .up-card__link:focus-visible { outline: 1px solid var(--swid-cream); outline-offset: 4px; }
+    @media (min-width: 768px) {
+      .upcoming__title { padding: 0 33px; }
+      .upcoming__track { padding: 0 33px 8px; scroll-padding-inline: 33px; }
+    }
+
+    /* ---------- Instagram: follow prompt + live profile preview ---------- */
+    .insta { padding: 120px 24px 0; color: #ffffff; }
+    .insta__title {
+      max-width: 18em;
+      margin: 0;
+      font: 400 var(--display-size)/1.08 "Instrument Serif", Georgia, serif;
+    }
+    .insta__frame {
+      --w: min(100vw - 48px, 540px);
+      width: var(--w);
+      --head: 146px;                              /* Instagram's profile header height */
+      height: calc(var(--head) + var(--w) * 2 / 3);   /* header + two rows of square posts */
+      border-radius: 12px;
+      overflow: hidden;
+      background: #ffffff;
+      box-shadow: 0 1px 2px rgb(10 6 80 / 0.25), 0 20px 40px -14px rgb(10 6 80 / 0.5);
+    }
+    .insta__frame iframe { display: block; width: 100%; height: 100%; border: 0; }
+    .insta__frame { margin-top: 40px; }
+    @media (min-width: 900px) { .insta__frame { margin-top: 0; } }
+    .insta__link {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 28px;
+      color: #ffffff;
+      font: 400 14px/1 var(--ui-font);
+      text-decoration: none;
+      transition: opacity 200ms ease;
+    }
+    .insta__link svg { width: 16px; height: 16px; transition: transform 250ms var(--spring); }
+    .insta__link:hover svg { transform: translateX(4px); }
+    .insta__link:active { opacity: 0.6; }
+    .insta__link:focus-visible { outline: 1px solid var(--swid-cream); outline-offset: 4px; }
+    @media (min-width: 768px) { .insta { padding: 140px 33px 0; } .insta__frame { --head: 158px; } }
+    /* two columns: prompt on the left, live preview on the right */
+    @media (min-width: 900px) {
+      .insta {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 64px;
+      }
+      .insta__title { margin-bottom: 0; max-width: 12em; }
+      .insta__frame { --w: min(40vw, 540px); }
+    }
+
+    /* ---------- Event overlay: darkened page + panel with a stacked photo carousel ---------- */
+    .ev-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      visibility: hidden;
+      pointer-events: none;
+      transition: visibility 0s linear 450ms;      /* stay visible until the closing animation ends */
+    }
+    .ev-overlay.is-open { visibility: visible; pointer-events: auto; transition-delay: 0s; }
+    .ev-overlay__backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgb(0 0 0 / 0.62);
+      opacity: 0;
+      transition: opacity 300ms ease;
+    }
+    .ev-overlay.is-open .ev-overlay__backdrop { opacity: 1; }
+    .ev-panel {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 40px;
+      width: min(1180px, 100%);
+      max-height: calc(100vh - 32px);
+      overflow-y: auto;
+      padding: 56px 24px 40px;
+      background: var(--swid-blue);
+      border: 2px solid #ffffff;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgb(0 0 0 / 0.25), 0 30px 80px -20px rgb(0 0 0 / 0.6);
+      opacity: 0;
+      transform: translateY(16px) scale(0.97);
+      transition: opacity 250ms ease, transform 500ms var(--spring);
+    }
+    .ev-overlay.is-open .ev-panel { opacity: 1; transform: none; }
+    .ev-panel__close {
+      position: absolute;
+      top: 16px;
+      right: 18px;
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: inherit;
+      font: 400 15px/1 var(--ui-font);
+      cursor: pointer;
+      transition: background-color 200ms ease, transform 200ms var(--spring);
+    }
+    .ev-panel__close:hover { background: rgb(255 255 255 / 0.12); }
+    .ev-panel__close:active { transform: scale(0.9); }
+    .ev-panel__close:focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; }
+
+    /* text column: icon, then title, then description, centred vertically */
+    .ev-panel__info { align-self: center; }
+    .ev-panel__icon { display: block; width: 72px; height: 72px; color: var(--swid-cream); }
+    .ev-panel__title { margin: 40px 0 0; font: 400 40px/1.1 "Instrument Serif", Georgia, serif; }
+    .ev-panel__desc { max-width: 28em; margin: 24px 0 0; font: 400 15px/1.45 "Inter", var(--ui-font); }
+
+    /* stacked-card carousel */
+    .carousel { display: flex; flex-direction: column; align-items: center; align-self: center; width: 100%; max-width: 470px; }
+    .carousel__deck {
+      position: relative;
+      width: min(235px, 52vw);
+      aspect-ratio: 235 / 315;
+      margin-top: 28px;                 /* room for the cards peeking out above */
+      touch-action: pan-y;
+    }
+    .carousel__card {
+      position: absolute;
+      inset: 0;
+      margin: 0;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #140e8a;
+      box-shadow: 0 2px 6px rgb(0 0 0 / 0.25), 0 18px 40px -12px rgb(0 0 0 / 0.5);
+      transition: transform 550ms var(--spring), opacity 300ms ease;
+      will-change: transform, opacity;
+    }
+    .carousel__card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .carousel__card::after {          /* soft shade + faint brand tint */
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgb(0 0 0 / 0.25), transparent 40%);
+    }
+    .carousel__card.no-anim { transition: none; }
+    /* cards waiting in the deck sit a little darker so the stack reads */
+    .carousel__card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background: #0a0640;
+      opacity: 0;
+      transition: opacity 400ms ease;
+      pointer-events: none;
+    }
+    .carousel__card[data-pos="1"]::before { opacity: 0.28; }
+    .carousel__card[data-pos="2"]::before { opacity: 0.45; }
+    .carousel__card { transition: transform 520ms var(--spring); }
+    .carousel__meta {
+      display: grid;
+      grid-template-columns: 32px 1fr auto 32px;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+      max-width: 470px;
+      margin-top: 32px;
+    }
+    .carousel__caption { min-height: 4.2em; }
+    .carousel__title { margin: 0; font: 400 28px/1.15 "Instrument Serif", Georgia, serif; }
+    .carousel__sub { margin: 6px 0 0; font: 400 14px/1.5 "Inter", var(--ui-font); color: rgb(240 235 214 / 0.55); }
+    .carousel__count {
+      font: 500 13px/1 ui-monospace, "SF Mono", Menlo, monospace;
+      letter-spacing: 0.12em;
+      white-space: nowrap;
+    }
+    .carousel__count span { color: rgb(240 235 214 / 0.45); }
+    .carousel__btn {
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: #ffffff;
+      cursor: pointer;
+      transition: background-color 200ms ease, transform 200ms var(--spring);
+    }
+    .carousel__btn svg { width: 14px; height: 14px; }
+    .carousel__btn:hover { background: rgb(255 255 255 / 0.12); }
+    .carousel__btn:active { transform: scale(0.88); }
+    .carousel__btn:focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; }
+
+    .event-card[data-overlay] { cursor: pointer; }
+
+    @media (min-width: 900px) {
+      /* equal side margins: text starts --pad from the left, gallery ends --pad from the right */
+      .ev-panel {
+        --pad: 72px;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 56px;
+        width: min(1040px, 74vw);
+        min-height: min(540px, calc(100vh - 32px));
+        padding: 56px var(--pad);
+      }
+      .carousel { width: 470px; justify-self: end; }
+    }
+    body.has-overlay { overflow: hidden; }
+
+    /* ---------- Events page: grid fills the screen under the top bar ---------- */
+    main { padding-top: calc(var(--bar-y) * 2); padding-bottom: 120px; padding-inline: var(--page-x); }   /* bottom room keeps fixed "Follow us" off the last row */
+    :root { --page-x: 24px; }   /* side gutter around page content */
+    @media (min-width: 768px) { :root { --page-x: 64px; } }
+    @media (min-width: 1280px) { :root { --page-x: 96px; } }
+    .events { border-left: var(--rule); border-right: var(--rule); }
+    /* top and bottom rules run past the gutter to the screen edges */
+    .events { position: relative; }
+    .events::before,
+    .events::after {
+      content: "";
+      position: absolute;
+      left: calc(-3px - var(--page-x));
+      right: calc(-3px - var(--page-x));
+      height: 3px;
+      background: var(--swid-cream);
+      pointer-events: none;
+    }
+    .events::before { top: -3px; }
+    .events::after  { bottom: -3px; }
+    .topbar { background: var(--swid-blue); }   /* page scrolls under the bar, so give it a solid fill */
+    @media (min-width: 768px) {
+      .events { min-height: calc(100vh - var(--bar-y) * 2); }
+      .events__intro { padding-bottom: 72px; }   /* keeps the button clear of the fixed "Follow us" */
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .logo { animation: none; opacity: 1; transform: translateY(-50%); }
+      .chrome, .sheet, .ui-link, .events__cta, .event-card__link, .event-card, .event-card::before, .ev-overlay__backdrop, .ev-panel, .carousel__card { transition: none !important; }
+    }
+      /* ---------- Footer: three columns of large links on cream ---------- */
+    .site-footer {
+      --footer-x: max(var(--edge), 1.8vw);
+      position: relative;
+      z-index: 1;
+      padding: 40px var(--footer-x) 64px;
+      background: var(--swid-cream);
+      color: var(--swid-blue);
+      display: grid;
+      grid-template-columns: 1fr;
+      row-gap: 56px;
+    }
+    @media (min-width: 768px) {
+      .site-footer { grid-template-columns: 34vw 34vw 1fr; padding-bottom: 72px; }
+    }
+    .site-footer__label {
+      margin: 0 0 clamp(28px, 3.1vw, 62px);
+      font: 400 var(--ui-size)/1.35 var(--ui-font);
+      letter-spacing: 0.01em;
+      opacity: 0.55;
+    }
+    .site-footer__list { margin: 0; padding: 0; list-style: none; }
+    .site-footer__link {
+      display: inline-block;
+      font: 400 clamp(32px, 3vw, 60px)/1.42 "Inter", var(--ui-font);
+      letter-spacing: -0.03em;
+      color: inherit;
+      text-decoration: none;
+      border-radius: 2px;
+      transition: opacity 200ms ease, transform 300ms var(--spring);
+    }
+    .site-footer__link:hover { opacity: 0.6; transform: translateX(4px); }
+    .site-footer__link:active { opacity: 0.4; transform: translateX(4px) translateY(1px); }
+    .site-footer__link:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+    .site-footer__mail { overflow-wrap: anywhere; }
+    /* white "Follow us" would vanish on cream, so it steps aside while the footer is on screen */
+    body.is-open .follow.is-hidden { opacity: 0; pointer-events: none; }
+    @media (prefers-reduced-motion: reduce) { .site-footer__link { transition: none; } }
+  </style>
+</head>
+<body class="is-open">
+  <!-- Logo: top left of the bar -->
+  <div class="logo-track" id="logoTrack">
+    <a class="logo ui-link" href="index.html" aria-label="Stanford Women in Design, home">
+      <img src="brand_assets/swid-wordmark.png" alt="" />
+      <span class="logo__star"><img src="brand_assets/swid-star.png" alt="" /></span>
+    </a>
+  </div>
+
+  <header class="topbar chrome">
+    <nav class="topbar__nav" aria-label="Primary">
+      <a class="ui-link" href="index.html#about">About</a>
+      <a class="ui-link" href="events.html" aria-current="page">Events</a>
+      <a class="ui-link" href="people.html">People</a>
+      <a class="ui-link" href="index.html#get-involved">Get Involved</a>
+    </nav>
+    <button class="topbar__menu ui-link" id="menuBtn" aria-expanded="false" aria-controls="sheet">Menu</button>
+  </header>
+
+  <nav class="sheet chrome" id="sheet" aria-label="Primary mobile">
+    <a class="ui-link" href="index.html#about">About</a>
+    <a class="ui-link" href="events.html" aria-current="page">Events</a>
+    <a class="ui-link" href="people.html">People</a>
+    <a class="ui-link" href="index.html#get-involved">Get Involved</a>
+  </nav>
+
+  <div class="follow chrome">
+    <span>Follow us</span>
+    <a class="ui-link" href="https://www.instagram.com/swid.stanford/" target="_blank" rel="noopener noreferrer" aria-label="SWID on Instagram">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="display:block">
+        <rect x="2.5" y="2.5" width="19" height="19" rx="5.5" />
+        <circle cx="12" cy="12" r="4.25" />
+        <circle cx="17.6" cy="6.4" r="1.1" fill="currentColor" stroke="none" />
+      </svg>
+    </a>
+  </div>
+
+  <main>
+    <section class="events" id="events" aria-labelledby="eventsTitle">
+      <div class="events__intro">
+        <h2 class="events__title" id="eventsTitle">Events</h2>
+        <a class="events__cta" href="index.html#get-involved">Get involved <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M1 5h7.5M5.5 2 8.5 5l-3 3"/></svg></a>
+      </div>
+      <div class="events__grid">
+          <article class="event-card" data-overlay="workshops" tabindex="0" role="button" aria-haspopup="dialog" aria-label="Workshops: see photos">
+            <span class="event-card__num">01</span>
+            <svg class="event-card__icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g stroke-dasharray="1.2 1.6"><path d="M14 50 44 20l6 6-30 30-8 2z"/><path d="M40 24l6 6M18 46l4 4"/></g><g><path d="M8 60h48"/><path d="M12 60v-4M20 60v-6M28 60v-4M36 60v-6M44 60v-4M52 60v-6"/></g></svg>
+            <h3 class="event-card__title">Workshops</h3>
+            <p class="event-card__desc">We host several workshops every quarter that focus on both professional development skills and also interest design activities.</p>
+            <hr class="event-card__rule" />
+            <a class="event-card__link" href="https://www.instagram.com/swid.stanford/" target="_blank" rel="noopener noreferrer">Learn more <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M1 5h7.5M5.5 2 8.5 5l-3 3"/></svg></a>
+          </article>
+          <article class="event-card" data-overlay="conference" tabindex="0" role="button" aria-haspopup="dialog" aria-label="Design Conference: see photos">
+            <span class="event-card__num">02</span>
+            <svg class="event-card__icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g stroke-dasharray="1.2 1.6"><path d="M32 6 18 40M32 6l14 34"/><path d="M18 40h28"/></g><path d="M10 50q22-8 44 0M6 57q26-9 52 0"/><circle cx="32" cy="6" r="2"/></svg>
+            <h3 class="event-card__title">Design Conference</h3>
+            <p class="event-card__desc">SWIDCon is an annual design conference which brings together designers across campus to learn from industry leaders who are designing our future.</p>
+            <hr class="event-card__rule" />
+            <a class="event-card__link" href="https://www.instagram.com/swid.stanford/" target="_blank" rel="noopener noreferrer">Learn more <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M1 5h7.5M5.5 2 8.5 5l-3 3"/></svg></a>
+          </article>
+          <article class="event-card" data-overlay="community" tabindex="0" role="button" aria-haspopup="dialog" aria-label="Community Building: see photos">
+            <span class="event-card__num">03</span>
+            <svg class="event-card__icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g stroke-dasharray="1.2 1.6"><circle cx="32" cy="20" r="11"/><circle cx="44.4" cy="29" r="11"/><circle cx="39.6" cy="43.5" r="11"/><circle cx="24.4" cy="43.5" r="11"/><circle cx="19.6" cy="29" r="11"/></g><circle cx="32" cy="32" r="3"/></svg>
+            <h3 class="event-card__title">Community Building</h3>
+            <p class="event-card__desc">Meet fellow designers and learn from one another as the community we build becomes one of the best resources on campus.</p>
+            <hr class="event-card__rule" />
+            <a class="event-card__link" href="https://www.instagram.com/swid.stanford/" target="_blank" rel="noopener noreferrer">Learn more <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M1 5h7.5M5.5 2 8.5 5l-3 3"/></svg></a>
+          </article>
+          <article class="event-card" data-overlay="treks" tabindex="0" role="button" aria-haspopup="dialog" aria-label="Treks: see photos">
+            <span class="event-card__num">04</span>
+            <svg class="event-card__icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 54 22 24l10 14 8-10 20 26z"/><g stroke-dasharray="1.2 1.6"><path d="M10 58c8-4 14 0 20-6s10-8 16-6 8-4 12-6"/></g><circle cx="52" cy="12" r="4"/></svg>
+            <h3 class="event-card__title">Treks</h3>
+            <p class="event-card__desc">Go on company treks to visit offices like Notion to see what design looks like beyond campus and college.</p>
+            <hr class="event-card__rule" />
+            <a class="event-card__link" href="https://www.instagram.com/swid.stanford/" target="_blank" rel="noopener noreferrer">Learn more <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M1 5h7.5M5.5 2 8.5 5l-3 3"/></svg></a>
+          </article>
+      </div>
+    </section>
+
+    <section class="upcoming" aria-labelledby="upcomingTitle">
+      <h2 class="upcoming__title" id="upcomingTitle">Upcoming events</h2>
+      <div class="upcoming__track" id="upTrack" tabindex="0" aria-label="Upcoming events, scroll sideways">
+        <article class="up-card">
+          <div class="up-card__media"><img src="https://placehold.co/1162x386/f0ebd6/1f16bf?text=SWID+Week+photo" alt="Placeholder photo for SWID Week" loading="lazy" /></div>
+          <h3 class="up-card__title">SWID Week</h3>
+          <p class="up-card__desc">October 26–30</p>
+          <a class="up-card__link" href="https://www.instagram.com/swid.stanford/" target="_blank" rel="noopener noreferrer">Read more <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></a>
+        </article>
+      </div>
+    </section>
+
+    <section class="insta" aria-labelledby="instaTitle">
+      <div class="insta__text">
+        <h2 class="insta__title" id="instaTitle">Follow us on Instagram to stay up to date with the most recent events</h2>
+        <a class="insta__link" href="https://www.instagram.com/swid.stanford/" target="_blank" rel="noopener noreferrer">Open @swid.stanford <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></a>
+      </div>
+      <div class="insta__frame">
+        <iframe src="https://www.instagram.com/swid.stanford/embed/" title="@swid.stanford on Instagram" loading="lazy" scrolling="no" allowtransparency="true"></iframe>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer" id="siteFooter">
+    <nav aria-labelledby="footPages">
+      <p class="site-footer__label" id="footPages">( Pages )</p>
+      <ul class="site-footer__list">
+        <li><a class="site-footer__link" href="index.html#about">About</a></li>
+        <li><a class="site-footer__link" href="events.html">Events</a></li>
+        <li><a class="site-footer__link" href="people.html">People</a></li>
+        <li><a class="site-footer__link" href="index.html#get-involved">Get Involved</a></li>
+      </ul>
+    </nav>
+    <div>
+      <p class="site-footer__label">( Socials )</p>
+      <ul class="site-footer__list">
+        <li><a class="site-footer__link" href="https://www.instagram.com/swid.stanford/" target="_blank" rel="noopener noreferrer">Instagram</a></li>
+        <li><a class="site-footer__link" href="#" target="_blank" rel="noopener noreferrer">Join our mailing list</a></li><!-- TODO: add the mailing list sign-up URL -->
+      </ul>
+    </div>
+    <div>
+      <p class="site-footer__label">( Contact )</p>
+      <a class="site-footer__link site-footer__mail" href="mailto:swid@stanford.edu">swid@stanford.edu</a><!-- TODO: confirm the club email -->
+    </div>
+  </footer>
+  <script>
+    (() => {
+      const footer = document.getElementById('siteFooter');
+      const follow = document.querySelector('.follow');
+      if (!follow || !('IntersectionObserver' in window)) return;
+      new IntersectionObserver(([e]) => follow.classList.toggle('is-hidden', e.isIntersecting)).observe(footer);
+    })();
+  </script>
+
+  <!-- Event overlay (opened from a card with data-overlay) -->
+  <div class="ev-overlay" id="evOverlay" aria-hidden="true">
+    <div class="ev-overlay__backdrop" data-close></div>
+    <div class="ev-panel" role="dialog" aria-modal="true" aria-labelledby="evTitle">
+      <button class="ev-panel__close" data-close aria-label="Close">x</button>
+      <div class="ev-panel__info">
+        <svg class="ev-panel__icon" id="evIcon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg>
+        <h2 class="ev-panel__title" id="evTitle"></h2>
+        <p class="ev-panel__desc" id="evDesc"></p>
+      </div>
+      <div class="carousel" id="evCarousel" aria-roledescription="carousel" aria-label="Event photos">
+        <div class="carousel__deck" id="evDeck"></div>
+        <div class="carousel__meta">
+          <button class="carousel__btn" id="evPrev" aria-label="Previous photo"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 2 4 7l5 5"/></svg></button>
+          <div class="carousel__caption" aria-live="polite">
+            <h3 class="carousel__title" id="evSlideTitle"></h3>
+            <p class="carousel__sub" id="evSlideSub"></p>
+          </div>
+          <span class="carousel__count" id="evCount"></span>
+          <button class="carousel__btn" id="evNext" aria-label="Next photo"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 2 5 5-5 5"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      /* ----- Mobile menu ----- */
+      const menuBtn = document.getElementById('menuBtn');
+      const sheet = document.getElementById('sheet');
+      const setMenu = (open) => {
+        sheet.classList.toggle('is-open', open);
+        menuBtn.setAttribute('aria-expanded', open);
+        menuBtn.textContent = open ? 'Close' : 'Menu';
+      };
+      menuBtn.addEventListener('click', () => setMenu(!sheet.classList.contains('is-open')));
+      sheet.addEventListener('click', (e) => { if (e.target.closest('a')) setMenu(false); });
+
+      /* ----- Event overlay with stacked photo carousel ----- */
+      // Swap these placeholders for real event photos (any portrait-ish image works).
+      const ph = (label, n) => `https://placehold.co/470x630/f0ebd6/1f16bf?text=${encodeURIComponent(label)}+photo+${n}`;
+      const placeholders = (label, sub) => [1, 2, 3, 4, 5, 6].map((n) => ({
+        src: ph(label, n),
+        alt: `Placeholder for ${label.toLowerCase()} photo ${n}`,
+        title: `${label} ${n}`,
+        sub,
+      }));
+      const EVENTS = {
+        workshops:  { label: 'Workshop photos',   slides: placeholders('Workshop', 'Add the workshop name, date and a short note.') },
+        conference: { label: 'SWIDCon photos',    slides: placeholders('SWIDCon', 'Add the speaker or session, year and a short note.') },
+        community:  { label: 'Community photos',  slides: placeholders('Community', 'Add the event name, date and a short note.') },
+        treks:      { label: 'Trek photos',       slides: placeholders('Trek', 'Add the company, date and a short note.') },
+      };
+
+      const overlay = document.getElementById('evOverlay');
+      const deck = document.getElementById('evDeck');
+      const $ = (id) => document.getElementById(id);
+      const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let slides = [], cards = [], current = 0, opener = null;
+
+      // Visible stack: front card plus two peeking behind it; the rest wait hidden behind the last slot
+      const STACK = [
+        { y: 0,   r: 0,    s: 1    },
+        { y: -14, r: -2.5, s: 0.95 },
+        { y: -26, r: 2,    s: 0.9  },
+      ];
+      const SHUFFLE_LIFT_MS = 280;  // how long a card slides clear of the deck before tucking in
+      let animating = false;
+      function place(card, pos, n) {
+        const k = (pos + n) % n;
+        const t = STACK[Math.min(k, STACK.length - 1)];
+        card.style.transform = `translateY(${t.y}px) rotate(${t.r}deg) scale(${t.s})`;
+        card.style.zIndex = String(n - k);
+        card.dataset.pos = String(Math.min(k, STACK.length - 1));
+      }
+      function updateCaption() {
+        const n = cards.length, sl = slides[current];
+        $('evSlideTitle').textContent = sl.title;
+        $('evSlideSub').textContent = sl.sub;
+        $('evCount').innerHTML = `${String(current + 1).padStart(2, '0')} <span>/ ${String(n).padStart(2, '0')}</span>`;
+      }
+      function render() {
+        const n = cards.length;
+        cards.forEach((c, i) => place(c, i - current, n));
+        updateCaption();
+      }
+      // Next: front card lifts up off the pile, then slides in at the back.
+      // Previous: back card lifts up from behind, then drops onto the front.
+      function go(dir) {
+        if (animating) return;
+        const n = cards.length;
+        if (reduceMotion) { current = (current + dir + n) % n; render(); return; }
+        animating = true;
+        const moving = dir > 0 ? cards[current] : cards[(current - 1 + n) % n];
+        moving.style.zIndex = String(dir > 0 ? n + 1 : 0);
+        // slide out to the side (next: left, previous: right) so it clears the pile without leaving the panel
+        const out = innerWidth < 900 ? 26 : (dir > 0 ? 72 : 52);              // % of card width; less room on phones
+        moving.style.transform = `translate(${dir > 0 ? -out : out}%, -10%) rotate(${dir > 0 ? -8 : 8}deg) scale(0.96)`;
+        current = (current + dir + n) % n;
+        cards.forEach((c, i) => c !== moving && place(c, i - current, n));   // the rest of the pile shifts right away
+        updateCaption();
+        setTimeout(() => {
+          moving.style.zIndex = String(dir > 0 ? 0 : n + 1);   // swap layer while it's clear of the pile
+          render();
+          setTimeout(() => { animating = false; }, 300);
+        }, SHUFFLE_LIFT_MS);
+      }
+
+      function openOverlay(card) {
+        const key = card.dataset.overlay;
+        const data = EVENTS[key];
+        if (!data) return;
+        opener = card;
+        $('evIcon').innerHTML = card.querySelector('.event-card__icon').innerHTML;
+        $('evTitle').textContent = card.querySelector('.event-card__title').textContent;
+        $('evDesc').textContent = card.querySelector('.event-card__desc').textContent;
+        $('evCarousel').setAttribute('aria-label', data.label);
+        slides = data.slides;
+        deck.innerHTML = slides.map((sl) => `<figure class="carousel__card"><img src="${sl.src}" alt="${sl.alt}" /></figure>`).join('');
+        cards = [...deck.children];
+        current = 0;
+        cards.forEach((c) => c.classList.add('no-anim'));
+        render();
+        requestAnimationFrame(() => cards.forEach((c) => c.classList.remove('no-anim')));
+        overlay.classList.add('is-open');
+        overlay.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('has-overlay');
+        overlay.querySelector('.ev-panel__close').focus();
+      }
+      function closeOverlay() {
+        overlay.classList.remove('is-open');
+        overlay.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('has-overlay');
+        if (opener) opener.focus();
+      }
+
+      document.querySelectorAll('.event-card[data-overlay]').forEach((card) => {
+        card.addEventListener('click', (e) => { if (!e.target.closest('a')) openOverlay(card); });
+        card.addEventListener('keydown', (e) => {
+          if ((e.key === 'Enter' || e.key === ' ') && e.target === card) { e.preventDefault(); openOverlay(card); }
+        });
+      });
+      overlay.addEventListener('click', (e) => { if (e.target.closest('[data-close]')) closeOverlay(); });
+      $('evPrev').addEventListener('click', () => go(-1));
+      $('evNext').addEventListener('click', () => go(1));
+      document.addEventListener('keydown', (e) => {
+        if (!overlay.classList.contains('is-open')) return;
+        if (e.key === 'Escape') closeOverlay();
+        if (e.key === 'ArrowRight') go(1);
+        if (e.key === 'ArrowLeft') go(-1);
+        if (e.key === 'Tab') {                         // keep focus inside the panel
+          const f = [...overlay.querySelectorAll('button')];
+          const i = f.indexOf(document.activeElement);
+          if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); }
+          else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); }
+        }
+      });
+      // scroll wheel / trackpad steps through the deck (one card per gesture)
+      let wheelAcc = 0, wheelLock = 0;
+      overlay.addEventListener('wheel', (e) => {
+        if (!overlay.classList.contains('is-open')) return;
+        const panel = overlay.querySelector('.ev-panel');
+        const panelScrolls = panel.scrollHeight > panel.clientHeight + 1;
+        if (panelScrolls && !e.target.closest('.carousel')) return;   // let a tall panel scroll normally
+        e.preventDefault();
+        const now = performance.now();
+        if (now < wheelLock) return;
+        wheelAcc += Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+        if (Math.abs(wheelAcc) > 40) {
+          go(wheelAcc > 0 ? 1 : -1);
+          wheelAcc = 0;
+          wheelLock = now + 650;
+        }
+      }, { passive: false });
+
+      // swipe on touch screens
+      let x0 = null;
+      deck.addEventListener('pointerdown', (e) => { x0 = e.clientX; });
+      deck.addEventListener('pointerup', (e) => {
+        if (x0 === null) return;
+        const dx = e.clientX - x0; x0 = null;
+        if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
+      });
+
+      /* ----- Upcoming events: click-and-drag to scroll sideways on desktop ----- */
+      const track = document.getElementById('upTrack');
+      let dragX = null, dragStart = 0, moved = false;
+      track.addEventListener('pointerdown', (e) => {
+        if (e.pointerType !== 'mouse') return;          // touch already scrolls natively
+        dragX = e.clientX; dragStart = track.scrollLeft; moved = false;
+      });
+      addEventListener('pointermove', (e) => {
+        if (dragX === null) return;
+        const dx = e.clientX - dragX;
+        if (!moved && Math.abs(dx) > 4) { moved = true; track.classList.add('is-dragging'); }
+        if (moved) track.scrollLeft = dragStart - dx;
+      });
+      addEventListener('pointerup', () => {
+        if (dragX === null) return;
+        dragX = null;
+        if (moved) {
+          track.classList.remove('is-dragging');
+          // settle onto the nearest card
+          const card = track.querySelector('.up-card');
+          const step = card.offsetWidth + parseFloat(getComputedStyle(track).columnGap || 20);
+          track.scrollTo({ left: Math.round(track.scrollLeft / step) * step, behavior: 'smooth' });
+        }
+      });
+      track.addEventListener('click', (e) => { if (moved) { e.preventDefault(); e.stopPropagation(); } }, true);
+    })();
+  </script>
+</body>
+</html>

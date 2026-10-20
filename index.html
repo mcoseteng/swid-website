@@ -479,6 +479,44 @@
       .logo { animation: none; opacity: 1; transform: translateY(-50%); }
       .chrome, .sheet, .ui-link, .typebox, .fmtbar, .fmtbar__tip, .about-label, .about-copy__inner, .wid__word, .fmtbar-wrap, .typebox__handle, .typebox__box::before, .typebox__box::after { transition: none !important; }
     }
+      /* ---------- Footer: three columns of large links on cream ---------- */
+    .site-footer {
+      --footer-x: max(var(--edge), 1.8vw);
+      position: relative;
+      z-index: 1;
+      padding: 40px var(--footer-x) 64px;
+      background: var(--swid-cream);
+      color: var(--swid-blue);
+      display: grid;
+      grid-template-columns: 1fr;
+      row-gap: 56px;
+    }
+    @media (min-width: 768px) {
+      .site-footer { grid-template-columns: 34vw 34vw 1fr; padding-bottom: 72px; }
+    }
+    .site-footer__label {
+      margin: 0 0 clamp(28px, 3.1vw, 62px);
+      font: 400 var(--ui-size)/1.35 var(--ui-font);
+      letter-spacing: 0.01em;
+      opacity: 0.55;
+    }
+    .site-footer__list { margin: 0; padding: 0; list-style: none; }
+    .site-footer__link {
+      display: inline-block;
+      font: 400 clamp(32px, 3vw, 60px)/1.42 "Inter", var(--ui-font);
+      letter-spacing: -0.03em;
+      color: inherit;
+      text-decoration: none;
+      border-radius: 2px;
+      transition: opacity 200ms ease, transform 300ms var(--spring);
+    }
+    .site-footer__link:hover { opacity: 0.6; transform: translateX(4px); }
+    .site-footer__link:active { opacity: 0.4; transform: translateX(4px) translateY(1px); }
+    .site-footer__link:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+    .site-footer__mail { overflow-wrap: anywhere; }
+    /* white "Follow us" would vanish on cream, so it steps aside while the footer is on screen */
+    body.is-open .follow.is-hidden { opacity: 0; pointer-events: none; }
+    @media (prefers-reduced-motion: reduce) { .site-footer__link { transition: none; } }
   </style>
 </head>
 <body>
@@ -493,8 +531,8 @@
   <header class="topbar chrome">
     <nav class="topbar__nav" aria-label="Primary">
       <a class="ui-link" href="#about">About</a>
-      <a class="ui-link" href="#events">Events</a>
-      <a class="ui-link" href="#people">People</a>
+      <a class="ui-link" href="events.html">Events</a>
+      <a class="ui-link" href="people.html">People</a>
       <a class="ui-link" href="#get-involved">Get Involved</a>
     </nav>
     <button class="topbar__menu ui-link" id="menuBtn" aria-expanded="false" aria-controls="sheet">Menu</button>
@@ -502,8 +540,8 @@
 
   <nav class="sheet chrome" id="sheet" aria-label="Primary mobile">
     <a class="ui-link" href="#about">About</a>
-    <a class="ui-link" href="#events">Events</a>
-    <a class="ui-link" href="#people">People</a>
+    <a class="ui-link" href="events.html">Events</a>
+    <a class="ui-link" href="people.html">People</a>
     <a class="ui-link" href="#get-involved">Get Involved</a>
   </nav>
 
@@ -598,7 +636,39 @@
         </div>
       </div>
     </section>
+
   </main>
+
+  <footer class="site-footer" id="siteFooter">
+    <nav aria-labelledby="footPages">
+      <p class="site-footer__label" id="footPages">( Pages )</p>
+      <ul class="site-footer__list">
+        <li><a class="site-footer__link" href="index.html#about">About</a></li>
+        <li><a class="site-footer__link" href="events.html">Events</a></li>
+        <li><a class="site-footer__link" href="people.html">People</a></li>
+        <li><a class="site-footer__link" href="index.html#get-involved">Get Involved</a></li>
+      </ul>
+    </nav>
+    <div>
+      <p class="site-footer__label">( Socials )</p>
+      <ul class="site-footer__list">
+        <li><a class="site-footer__link" href="https://www.instagram.com/swid.stanford/" target="_blank" rel="noopener noreferrer">Instagram</a></li>
+        <li><a class="site-footer__link" href="#" target="_blank" rel="noopener noreferrer">Join our mailing list</a></li><!-- TODO: add the mailing list sign-up URL -->
+      </ul>
+    </div>
+    <div>
+      <p class="site-footer__label">( Contact )</p>
+      <a class="site-footer__link site-footer__mail" href="mailto:swid@stanford.edu">swid@stanford.edu</a><!-- TODO: confirm the club email -->
+    </div>
+  </footer>
+  <script>
+    (() => {
+      const footer = document.getElementById('siteFooter');
+      const follow = document.querySelector('.follow');
+      if (!follow || !('IntersectionObserver' in window)) return;
+      new IntersectionObserver(([e]) => follow.classList.toggle('is-hidden', e.isIntersecting)).observe(footer);
+    })();
+  </script>
 
   <script>
     (() => {
