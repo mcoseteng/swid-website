@@ -1,0 +1,740 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stanford Women in Design</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400&display=swap" rel="stylesheet" />
+  <link rel="preload" href="brand_assets/Instrument_Serif/InstrumentSerif-Italic.ttf" as="font" type="font/ttf" crossorigin />
+  <link rel="preload" href="brand_assets/Instrument_Serif/InstrumentSerif-Regular.ttf" as="font" type="font/ttf" crossorigin />
+  <style>
+    @font-face {
+      font-family: "Instrument Serif";
+      src: url("brand_assets/Instrument_Serif/InstrumentSerif-Regular.ttf") format("truetype");
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "Instrument Serif";
+      src: url("brand_assets/Instrument_Serif/InstrumentSerif-Italic.ttf") format("truetype");
+      font-style: italic;
+      font-display: swap;
+    }
+
+    :root {
+      --swid-blue: #1f16bf;
+      --swid-cream: #f0ebd6;
+      --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+      /* Chrome tokens */
+      --edge: 16px;          /* page gutter */
+      --bar-y: 34px;         /* vertical centre of the top bar */
+      --nav-logo: 50px;      /* logo width in the top bar */
+      --ui-font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      --ui-size: 11px;
+      --display-size: clamp(30px, 3.6vw, 52px);   /* hero name + section headings */
+      --body-size: calc(var(--ui-size) + 2px);     /* About + section body copy */
+    }
+    @media (max-width: 399px) {
+      :root { --nav-logo: 42px; --ui-size: 10px; }
+    }
+    @media (min-width: 768px) {
+      :root { --edge: 20px; --nav-logo: 73px; --ui-size: 13px; }
+    }
+
+    html { scroll-behavior: auto; }
+    body {
+      margin: 0;
+      background: var(--swid-blue);
+      color: var(--swid-cream);
+      overflow: hidden;
+    }
+    body.is-open { overflow: auto; }
+
+    /* ---------- Logo (top left of the bar) ---------- */
+    .logo-track {
+      position: fixed;
+      top: var(--bar-y);
+      left: var(--edge);
+      z-index: 71;
+      width: var(--nav-logo);
+    }
+    .logo {
+      position: relative;
+      display: block;
+      aspect-ratio: 2542 / 886;
+      transform: translateY(-50%) translateY(8px) scale(0.96);
+      opacity: 0;
+      animation: logo-in 500ms var(--spring) 200ms forwards;
+    }
+    .logo img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    .logo__star {
+      position: absolute;
+      left: 78.206%;
+      top: 22.291%;
+      width: 19.355%;
+      aspect-ratio: 1;
+    }
+    .logo__star img { width: 100%; height: 100%; }
+    body.is-open .logo-track { pointer-events: auto; }
+
+    @keyframes logo-in   { to { transform: translateY(-50%); opacity: 1; } }
+
+    /* ---------- Chrome (top bar + follow us) ---------- */
+    .chrome {
+      font-family: var(--ui-font);
+      font-size: var(--ui-size);
+      line-height: 1.35;
+      letter-spacing: 0.01em;
+      opacity: 0;
+      transition: opacity 500ms ease 150ms;
+    }
+    body.is-open .chrome { opacity: 1; }
+
+    .topbar {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 70;
+      height: calc(var(--bar-y) * 2);
+      padding: 0 var(--edge);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;   /* logo sits on the left as its own fixed layer */
+    }
+    .topbar__nav { display: none; gap: 36px; }
+    @media (min-width: 768px) {
+      .topbar__nav { display: flex; }
+      .topbar__menu { display: none; }
+    }
+
+    .follow {
+      position: fixed;
+      left: var(--edge);
+      bottom: 20px;
+      z-index: 70;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .ui-link {
+      color: inherit;
+      text-decoration: none;
+      border-radius: 2px;
+      transition: opacity 200ms ease, transform 200ms var(--spring);
+    }
+    .ui-link:hover { opacity: 0.6; }
+    .ui-link:active { opacity: 0.4; transform: translateY(1px); }
+    .ui-link:focus-visible { outline: 1px solid var(--swid-cream); outline-offset: 4px; }
+    .ui-link[aria-current="page"] { opacity: 1; }
+
+    .topbar__menu {
+      background: none;
+      border: 0;
+      padding: 0;
+      font: inherit;
+      letter-spacing: inherit;
+      text-transform: inherit;
+      color: inherit;
+      cursor: pointer;
+    }
+
+    /* Mobile menu sheet */
+    .sheet {
+      position: fixed;
+      inset: calc(var(--bar-y) * 2) 0 auto 0;
+      z-index: 69;
+      padding: 8px var(--edge) 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: var(--swid-blue);
+      opacity: 0;
+      transform: translateY(-8px);
+      pointer-events: none;
+      transition: opacity 250ms ease, transform 350ms var(--spring);
+    }
+    body.is-open .sheet:not(.is-open) { opacity: 0; }
+    .sheet.is-open { opacity: 1; transform: none; pointer-events: auto; }
+    @media (min-width: 768px) { .sheet { display: none; } }
+
+    /* ---------- Hero: typed name in a Figma-style text box ---------- */
+    .hero {
+      position: relative;
+      height: 100vh;
+      height: 100svh;
+    }
+    .typebox {
+      --sel: #0c8ce9;                           /* Figma selection blue */
+      --handle: 6px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 56;
+      will-change: transform;
+      pointer-events: none;
+      font-family: "Instrument Serif", Georgia, serif;
+      font-style: italic;
+      font-weight: 400;
+      font-size: var(--display-size);
+      margin: 0;
+      line-height: 1.3;                         /* = font ascent + descent */
+      color: #ffffff;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 200ms ease;
+    }
+    .typebox.is-on { opacity: 1; }
+    /* Invisible full string reserves the final width so the box grows rightward from a fixed left edge */
+    .typebox__ghost { visibility: hidden; padding: 0.03em 0.11em; display: block; }
+    .typebox__box {
+      position: absolute;
+      top: 0;
+      left: 0;
+      padding: 0.03em 0.11em;
+    }
+    /* selection outline on its own layer so it can fade */
+    .typebox__box::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      outline: 1px solid var(--sel);
+    }
+    /* baseline indicator */
+    .typebox__box::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(0.03em + 0.99em);
+      height: 1px;
+      background: var(--sel);
+    }
+    .typebox__text {
+      display: inline;
+      text-decoration-thickness: 0.05em;
+      text-underline-offset: 0.12em;
+      transition: background-color 200ms ease;
+    }
+    /* Toolbar formatting (applied to the whole box so the ghost width matches) */
+    /* Instrument Serif ships no bold cut, so thicken the strokes instead of faking a weight */
+    .typebox.fmt-bold .typebox__text { -webkit-text-stroke: 0.035em currentColor; paint-order: stroke fill; }
+    .typebox.fmt-roman     { font-style: normal; }
+    .typebox.fmt-underline .typebox__text { text-decoration-line: underline; }
+    .typebox.fmt-strike    .typebox__text { text-decoration-line: line-through; }
+    .typebox.fmt-underline.fmt-strike .typebox__text { text-decoration-line: underline line-through; }
+    .typebox.fmt-highlight .typebox__text { background-color: #a616c0; }
+    .typebox__caret {
+      display: inline-block;
+      width: 1.5px;
+      height: 1.05em;
+      margin: 0 -2.5px 0 1px;   /* caret takes no net width, so final box matches the ghost */
+      vertical-align: -0.2em;
+      background: currentColor;
+      animation: caret-blink 1s steps(1) infinite;
+      transition: opacity 200ms ease;
+    }
+    .typebox.is-typing .typebox__caret { animation: none; }
+    .typebox.is-done .typebox__caret { animation: none; opacity: 0; }
+    .typebox__handle {
+      --h: var(--handle);
+      --b: 1px;
+      position: absolute;
+      width: var(--h);
+      height: var(--h);
+      background: #ffffff;
+      border: var(--b) solid var(--sel);
+      box-sizing: content-box;
+    }
+    .typebox__handle--tl { top: calc(var(--h) / -2 - var(--b)); left: calc(var(--h) / -2 - var(--b)); }
+    .typebox__handle--tr { top: calc(var(--h) / -2 - var(--b)); right: calc(var(--h) / -2 - var(--b)); }
+    .typebox__handle--bl { bottom: calc(var(--h) / -2 - var(--b)); left: calc(var(--h) / -2 - var(--b)); }
+    .typebox__handle--br { bottom: calc(var(--h) / -2 - var(--b)); right: calc(var(--h) / -2 - var(--b)); }
+    @keyframes caret-blink { 50% { opacity: 0; } }
+
+    /* Deselected (once the page is scrolled): selection UI and toolbar fade, formatting stays */
+    .typebox__box::before,
+    .typebox__box::after,
+    .typebox__handle { transition: opacity 300ms ease; }
+    .typebox.is-deselected .typebox__box::before,
+    .typebox.is-deselected .typebox__box::after,
+    .typebox.is-deselected .typebox__handle { opacity: 0; }
+    .fmtbar-wrap { transition: opacity 300ms ease; }
+    .fmtbar-wrap.is-hidden { opacity: 0; pointer-events: none; }
+    .fmtbar-wrap.is-hidden .fmtbar { pointer-events: none; }
+
+    /* ---------- "About" label above the name ---------- */
+    .about-label-wrap {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 56;
+      pointer-events: none;
+    }
+    .about-label {
+      display: block;
+      font-family: var(--ui-font);
+      font-size: calc(var(--ui-size) + 1px);
+      line-height: 1.35;
+      letter-spacing: 0.01em;
+      color: var(--swid-cream);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 250ms ease, transform 500ms var(--spring);
+    }
+    .about-label.is-shown { opacity: 1; transform: none; }
+
+    /* Intro paragraph under the name, revealed with the label */
+    .about-copy {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 56;
+      margin: 0;
+      font-family: var(--ui-font);
+      font-size: var(--body-size);
+      line-height: 1.55;
+      letter-spacing: 0.005em;
+      color: var(--swid-cream);
+      pointer-events: none;
+    }
+    .about-copy__inner {
+      display: block;
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 300ms ease 80ms, transform 600ms var(--spring) 80ms;
+    }
+    .about-copy.is-shown .about-copy__inner { opacity: 1; transform: none; }
+
+    /* ---------- Photos: sit just below the fold, scroll up on either side of About ---------- */
+    .gallery {
+      position: relative;
+      z-index: 58;                 /* above the fixed About text, below the nav */
+      height: 100vh;               /* fallback; JS sizes it so the next screen starts where the About screen ends */
+      pointer-events: none;
+    }
+    .photo {
+      position: absolute;
+      width: 46vw;
+      margin: 0;
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow:
+        0 2px 4px rgb(10 6 80 / 0.20),
+        0 16px 32px -8px rgb(10 6 80 / 0.40),
+        0 40px 80px -24px rgb(10 6 80 / 0.45);
+    }
+    .photo img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+    /* colour treatment: faint brand-blue multiply + soft bottom shade */
+    .photo::before,
+    .photo::after { content: ""; position: absolute; inset: 0; pointer-events: none; }
+    .photo::before { background: var(--swid-blue); mix-blend-mode: multiply; opacity: 0.12; }
+    .photo::after  { background: linear-gradient(to top, rgb(0 0 0 / 0.25), transparent 45%); }
+    .photo--left  { top: 0;      left: var(--edge); }
+    .photo--right { top: 28vh;   right: var(--edge); }
+    @media (min-width: 768px) {
+      .photo { width: min(26vw, 380px); }
+      .photo--left  { left: 4vw; }
+      .photo--right { right: 4vw; top: 260px; }
+    }
+
+    /* ---------- "What is design?" ---------- */
+    .wid {
+      position: relative;
+      min-height: 100vh;
+      padding: 96px calc(var(--edge) * 2);   /* doubled side margins */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .wid__title {
+      margin: 0;
+      font-family: "Instrument Serif", Georgia, serif;
+      font-weight: 400;
+      font-size: var(--display-size);
+      line-height: 1;
+      letter-spacing: -0.01em;
+      color: #ffffff;
+      white-space: nowrap;
+    }
+    .wid__word {
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(0.3em);
+      transition: opacity 900ms ease, transform 1200ms var(--spring);
+    }
+    .wid__word--design { font-style: italic; }
+    /* staggered on the way in only; leaving resets instantly-ish with no delay */
+    .wid.is-in .wid__word { opacity: 1; transform: none; }
+    .wid.is-in .wid__word--is     { transition-delay: 420ms; }
+    .wid.is-in .wid__word--design { transition-delay: 840ms; }
+    /* large body set right under the heading: 0.74× the heading size, less 8px */
+    .wid__body {
+      margin-top: calc(var(--display-size) * 0.67);
+      font-family: "Inter", var(--ui-font);
+      font-size: calc(var(--display-size) * 0.74 - 8px);
+      line-height: 1.29;
+      color: #ffffff;
+    }
+    .wid__body p { margin: 0; }
+    .wid__body p + p { margin-top: 1.29em; }
+    @media (min-width: 768px) {
+      .wid {
+        height: 100vh;                     /* one full screen */
+        padding: 0;
+        display: block;
+      }
+      /* heading stacked over the body, the pair centred on the screen */
+      .wid__inner {
+        position: absolute;
+        left: 18.48%;
+        right: 18.48%;                     /* equal margins left and right */
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      .wid__body { max-width: none; }      /* body fills the full width between the margins */
+    }
+
+    /* ---------- Formatting toolbar under the name ---------- */
+    .fmtbar-wrap {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 57;
+      will-change: transform, opacity;
+    }
+    .fmtbar {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px;
+      background: #ffffff;
+      color: var(--swid-blue);
+      border: 1px solid rgb(31 22 191 / 0.10);
+      border-radius: 8px;
+      box-shadow:
+        0 1px 2px rgb(20 12 120 / 0.18),
+        0 8px 20px -6px rgb(20 12 120 / 0.35),
+        0 24px 48px -16px rgb(10 6 80 / 0.40);
+      opacity: 0;
+      transform: translateY(10px) scale(0.9);
+      pointer-events: none;
+    }
+    .fmtbar.is-on {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+      transition: opacity 250ms ease, transform 500ms var(--spring);
+    }
+    .fmtbar__divider { width: 1px; height: 32px; background: #d1d5db; }
+    .fmtbar__item { position: relative; }
+    .fmtbar__btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+      transition: background-color 200ms ease, transform 150ms var(--spring);
+    }
+    .fmtbar__btn svg { width: 16px; height: 16px; display: block; }
+    .fmtbar__btn:hover,
+    .fmtbar__btn[aria-pressed="true"] { background: rgb(31 22 191 / 0.10); }
+    .fmtbar__btn[aria-pressed="true"]:hover { background: rgb(31 22 191 / 0.16); }
+    .fmtbar__btn:active { transform: scale(0.92); }
+    .fmtbar__btn:focus { outline: none; }
+    .fmtbar__btn:focus-visible { outline: 2px solid #0c8ce9; outline-offset: 1px; }
+    .fmtbar__tip {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: #1f2937;
+      color: #ffffff;
+      font: 500 12px/1.3 var(--ui-font);
+      white-space: nowrap;
+      box-shadow: 0 6px 16px -4px rgb(10 6 80 / 0.45);
+      opacity: 0;
+      transform: translate(-50%, 10px);
+      pointer-events: none;
+      transition: opacity 200ms ease, transform 200ms ease;
+    }
+    .fmtbar__item:hover .fmtbar__tip,
+    .fmtbar__btn:focus-visible + .fmtbar__tip { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .logo { animation: none; opacity: 1; transform: translateY(-50%); }
+      .chrome, .sheet, .ui-link, .typebox, .fmtbar, .fmtbar__tip, .about-label, .about-copy__inner, .wid__word, .fmtbar-wrap, .typebox__handle, .typebox__box::before, .typebox__box::after { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Logo: top left of the bar -->
+  <div class="logo-track" id="logoTrack">
+    <a class="logo ui-link" href="#top" aria-label="Stanford Women in Design, back to top">
+      <img src="brand_assets/swid-wordmark.png" alt="" />
+      <span class="logo__star"><img src="brand_assets/swid-star.png" alt="" /></span>
+    </a>
+  </div>
+
+  <header class="topbar chrome">
+    <nav class="topbar__nav" aria-label="Primary">
+      <a class="ui-link" href="#about">About</a>
+      <a class="ui-link" href="#events">Events</a>
+      <a class="ui-link" href="#people">People</a>
+      <a class="ui-link" href="#get-involved">Get Involved</a>
+    </nav>
+    <button class="topbar__menu ui-link" id="menuBtn" aria-expanded="false" aria-controls="sheet">Menu</button>
+  </header>
+
+  <nav class="sheet chrome" id="sheet" aria-label="Primary mobile">
+    <a class="ui-link" href="#about">About</a>
+    <a class="ui-link" href="#events">Events</a>
+    <a class="ui-link" href="#people">People</a>
+    <a class="ui-link" href="#get-involved">Get Involved</a>
+  </nav>
+
+  <div class="follow chrome">
+    <span>Follow us</span>
+    <a class="ui-link" href="https://www.instagram.com/swid.stanford/" target="_blank" rel="noopener noreferrer" aria-label="SWID on Instagram">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="display:block">
+        <rect x="2.5" y="2.5" width="19" height="19" rx="5.5" />
+        <circle cx="12" cy="12" r="4.25" />
+        <circle cx="17.6" cy="6.4" r="1.1" fill="currentColor" stroke="none" />
+      </svg>
+    </a>
+  </div>
+
+  <!-- Page body: sections get built here next. Extra height lets the page scroll. -->
+  <main id="top">
+    <section class="hero">
+      <h1 class="typebox" id="typebox" aria-label="Stanford Women in Design">
+        <span class="typebox__ghost" aria-hidden="true">Stanford Women in Design</span>
+        <span class="typebox__box" aria-hidden="true">
+          <span class="typebox__text" id="typed"></span><span class="typebox__caret"></span>
+          <span class="typebox__handle typebox__handle--tl"></span>
+          <span class="typebox__handle typebox__handle--tr"></span>
+          <span class="typebox__handle typebox__handle--bl"></span>
+          <span class="typebox__handle typebox__handle--br"></span>
+        </span>
+      </h1>
+
+      <div class="about-label-wrap" id="aboutLabelWrap">
+        <span class="about-label" id="aboutLabel">About</span>
+      </div>
+      <p class="about-copy" id="aboutCopy">
+        <span class="about-copy__inner">Stanford Women in Design is a community for anyone curious about design, whether you’re a design major or someone who’s always wanted to learn. We host workshops, social events, and conferences that help you build skills while meeting passionate, creative people.</span>
+      </p>
+
+      <div class="fmtbar-wrap" id="fmtbarWrap">
+        <div class="fmtbar" id="fmtbar" role="toolbar" aria-label="Format the name">
+          <div class="fmtbar__item">
+            <button class="fmtbar__btn" data-fmt="bold" aria-pressed="false" aria-label="Bold">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8"/></svg>
+            </button>
+            <span class="fmtbar__tip" aria-hidden="true">Bold</span>
+          </div>
+          <div class="fmtbar__item">
+            <button class="fmtbar__btn" data-fmt="italic" aria-pressed="true" aria-label="Italic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" x2="10" y1="4" y2="4"/><line x1="14" x2="5" y1="20" y2="20"/><line x1="15" x2="9" y1="4" y2="20"/></svg>
+            </button>
+            <span class="fmtbar__tip" aria-hidden="true">Italic</span>
+          </div>
+          <div class="fmtbar__item">
+            <button class="fmtbar__btn" data-fmt="underline" aria-pressed="false" aria-label="Underline">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4v6a6 6 0 0 0 12 0V4"/><line x1="4" x2="20" y1="20" y2="20"/></svg>
+            </button>
+            <span class="fmtbar__tip" aria-hidden="true">Underline</span>
+          </div>
+          <div class="fmtbar__item">
+            <button class="fmtbar__btn" data-fmt="strike" aria-pressed="false" aria-label="Strikethrough">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4H9a3 3 0 0 0-2.83 4"/><path d="M14 12a4 4 0 0 1 0 8H6"/><line x1="4" x2="20" y1="12" y2="12"/></svg>
+            </button>
+            <span class="fmtbar__tip" aria-hidden="true">Strikethrough</span>
+          </div>
+          <div class="fmtbar__divider" aria-hidden="true"></div>
+          <div class="fmtbar__item">
+            <button class="fmtbar__btn" data-fmt="highlight" aria-pressed="false" aria-label="Highlight">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 11-6 6v3h9l3-3"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/></svg>
+            </button>
+            <span class="fmtbar__tip" aria-hidden="true">Highlight</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="gallery" aria-label="Photos from SWID events">
+      <figure class="photo photo--left">
+        <img src="brand_assets/swid-rollouts.jpg" alt="SWID members gathered around a picnic table with drinks on Stanford's campus, Hoover Tower behind them" loading="lazy" />
+      </figure>
+      <figure class="photo photo--right">
+        <img src="brand_assets/swidcon25.jpg" alt="Six SWID organizers on stage at the annual design conference, Design for Sustainability" loading="lazy" />
+      </figure>
+    </section>
+
+    <section class="wid" id="what-is-design" aria-labelledby="widTitle">
+      <div class="wid__inner">
+        <h2 class="wid__title" id="widTitle">
+          <span class="wid__word wid__word--what">What</span>
+          <span class="wid__word wid__word--is">is</span>
+          <span class="wid__word wid__word--design">design?</span>
+        </h2>
+        <div class="wid__body">
+          <p>Design at Stanford is deeply interdisciplinary, ranging from physical products to digital experiences.</p>
+          <p>But at its core, design is about people. It’s the practice of understanding what others need, then building something that meets those needs and makes their lives a little better.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+
+      if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+      scrollTo(0, 0);
+
+
+      /* ----- Layout: name + toolbar centred on screen; "About" label slides up on scroll ----- */
+      const GAP = 20;               // space between name box and toolbar
+      const LABEL_GAP = 10;         // space between "About" and the top of the name box
+      const typeboxEl = document.getElementById('typebox');
+      const barWrap = document.getElementById('fmtbarWrap');
+      const labelWrap = document.getElementById('aboutLabelWrap');
+      const label = document.getElementById('aboutLabel');
+      const copy = document.getElementById('aboutCopy');
+      const COPY_GAP = 16;          // space between the name box and the paragraph
+      const gallery = document.querySelector('.gallery');
+      const photos = [...document.querySelectorAll('.photo')];
+      let ticking = false;
+      function layout() {
+        ticking = false;
+        const w = typeboxEl.offsetWidth, h = typeboxEl.offsetHeight;
+        const bw = barWrap.offsetWidth, bh = barWrap.offsetHeight;
+        const lh = labelWrap.offsetHeight;
+        const x = (innerWidth - w) / 2;
+        const yRest = (innerHeight - (h + GAP + bh)) / 2;      // name's resting top while pinned
+
+        // Pin the hero text until the photos frame it (their midpoint meets the text block's centre),
+        // then let everything scroll away together.
+        const groupTop = yRest - LABEL_GAP - lh;
+        const groupBottom = yRest + h + COPY_GAP + copy.offsetHeight;
+        const groupMid = (groupTop + groupBottom) / 2;
+        const photoMid = photos.reduce((sum, el) => sum + gallery.offsetTop + el.offsetTop + el.offsetHeight / 2, 0) / photos.length;
+        const release = photoMid - groupMid;                    // scroll position where the pin lets go
+        const y = yRest - Math.max(0, scrollY - release);
+
+        // The About screen is the view at `release`; "What is design?" begins one screen later,
+        // or after the lowest photo if that reaches further (narrow screens)
+        const photosEnd = Math.max(...photos.map(el => el.offsetTop + el.offsetHeight)) + GAP;
+        const gh = Math.max(photosEnd, Math.round(release + innerHeight - gallery.offsetTop));
+        if (gallery.offsetHeight !== gh) gallery.style.height = `${gh}px`;
+
+        typeboxEl.style.transform = `translate(${x}px, ${y}px)`;
+        barWrap.style.transform = `translate(${(innerWidth - bw) / 2}px, ${y + h + GAP}px)`;
+        // Label and paragraph align with the first glyph, not the box edge
+        const tx = x + 0.11 * parseFloat(getComputedStyle(typeboxEl).fontSize);
+        labelWrap.style.transform = `translate(${tx}px, ${y - LABEL_GAP - lh}px)`;
+        copy.style.width = `${w - 2 * (tx - x)}px`;
+        copy.style.transform = `translate(${tx}px, ${y + h + COPY_GAP}px)`;
+        const scrolled = scrollY > 0;
+        label.classList.toggle('is-shown', scrolled);
+        copy.classList.toggle('is-shown', scrolled);
+        typeboxEl.classList.toggle('is-deselected', scrolled);
+        barWrap.classList.toggle('is-hidden', scrolled);
+      }
+      const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(layout); } };
+      addEventListener('scroll', onScroll, { passive: true });
+      addEventListener('resize', onScroll);
+      document.fonts && document.fonts.ready.then(onScroll);
+      document.fonts && document.fonts.addEventListener('loadingdone', onScroll);   // e.g. roman cut loads on first toggle
+
+      /* ----- "What is design?": words fade in one at a time whenever the heading scrolls into view ----- */
+      const wid = document.getElementById('what-is-design');
+      if (reduced || !('IntersectionObserver' in window)) wid.classList.add('is-in');
+      else {
+        const io = new IntersectionObserver((entries) => {
+          // replay every time the heading enters view; reset when it leaves
+          for (const e of entries) wid.classList.toggle('is-in', e.isIntersecting);
+        }, { rootMargin: '0px 0px -30% 0px' });
+        io.observe(document.getElementById('widTitle'));
+      }
+
+      /* ----- Mobile menu ----- */
+      const menuBtn = document.getElementById('menuBtn');
+      const sheet = document.getElementById('sheet');
+      const setMenu = (open) => {
+        sheet.classList.toggle('is-open', open);
+        menuBtn.setAttribute('aria-expanded', open);
+        menuBtn.textContent = open ? 'Close' : 'Menu';
+      };
+      menuBtn.addEventListener('click', () => setMenu(!sheet.classList.contains('is-open')));
+      sheet.addEventListener('click', (e) => { if (e.target.closest('a')) setMenu(false); });
+
+      /* ----- Hero: type the name out, one keystroke at a time ----- */
+      const typebox = document.getElementById('typebox');
+      const typed = document.getElementById('typed');
+      const TYPE_TEXT = 'Stanford Women in Design';
+      const TYPE_SPEED = 75;        // base ms per keystroke
+
+      function typeOut() {
+        typebox.classList.add('is-on');
+        if (reduced) { typed.textContent = TYPE_TEXT; typebox.classList.add('is-done'); showToolbar(); return; }
+        let i = 0;
+        const key = () => {
+          typebox.classList.add('is-typing');
+          typed.textContent = TYPE_TEXT.slice(0, ++i);
+          if (i === TYPE_TEXT.length) {
+            typebox.classList.remove('is-typing');
+            setTimeout(showToolbar, 300);
+            setTimeout(() => typebox.classList.add('is-done'), 1600);   // a couple of blinks, then deselect caret
+            return;
+          }
+          // human rhythm: small jitter, a beat longer after each word
+          const pause = TYPE_TEXT[i - 1] === ' ' ? 140 : 0;
+          setTimeout(key, TYPE_SPEED + Math.random() * 55 + pause);
+        };
+        setTimeout(key, 550);     // caret blinks in the empty box first
+      }
+
+      /* ----- Toolbar: each button toggles one format on the name ----- */
+      const fmtbar = document.getElementById('fmtbar');
+      const FMT_CLASS = { bold: 'fmt-bold', underline: 'fmt-underline', strike: 'fmt-strike', highlight: 'fmt-highlight' };
+      fmtbar.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-fmt]');
+        if (!btn) return;
+        const on = btn.getAttribute('aria-pressed') !== 'true';
+        btn.setAttribute('aria-pressed', on);
+        const fmt = btn.dataset.fmt;
+        if (fmt === 'italic') typebox.classList.toggle('fmt-roman', !on);   // name is italic by default
+        else typebox.classList.toggle(FMT_CLASS[fmt], on);
+        layout();                                                         // width may change: re-centre
+      });
+      const showToolbar = () => fmtbar.classList.add('is-on');
+
+      const finish = () => {
+        document.body.classList.add('is-open');
+        layout();
+        setTimeout(typeOut, reduced ? 0 : 250);
+      };
+
+      if (document.readyState === 'complete') finish();
+      else addEventListener('load', finish, { once: true });
+    })();
+  </script>
+</body>
+</html>
